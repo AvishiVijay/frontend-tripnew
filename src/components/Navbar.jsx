@@ -1,49 +1,56 @@
-import { Link } from "react-router-dom";
+// src/components/Navbar.jsx
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
 
-function Navbar() {
+const Navbar = () => {
+  const navigate = useNavigate();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
   return (
-    <nav className="bg-white shadow-md fixed top-0 w-full z-50 p-4 flex justify-between items-center px-6">
-      <h1 className="text-xl font-bold text-blue-600">
-        <Link to="/">TripPlanner</Link>
-      </h1>
-
+    <div className="w-full bg-white shadow-md flex justify-end items-center px-8 py-4">
       <div className="flex items-center space-x-6">
-        <Link to="/login" className="hover:text-blue-500 font-medium">
-          Login
-        </Link>
-        <Link to="/register" className="hover:text-blue-500 font-medium">
-          Register
-        </Link>
+        {/* Navigation Links */}
+        <Link to="/" className="text-indigo-700 hover:text-indigo-500 font-medium">Home</Link>
+        <Link to="/trips" className="text-indigo-700 hover:text-indigo-500 font-medium">Trips</Link>
+        <Link to="/add-trip" className="text-indigo-700 hover:text-indigo-500 font-medium">Add Trip</Link>
+        <Link to="/login" className="text-indigo-700 hover:text-indigo-500 font-medium">Login</Link>
 
-        {/* Trips Dropdown */}
-        <div className="relative group">
-          <button className="hover:text-blue-500 font-medium focus:outline-none">
-            Trips ▾
-          </button>
-          <div className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-2 right-0 min-w-[150px]">
-            <Link
-              to="/triplist"
-              className="block px-4 py-2 hover:bg-blue-50 text-sm text-gray-700"
-            >
-              My Trips
-            </Link>
-            <Link
-              to="/addtrip"
-              className="block px-4 py-2 hover:bg-blue-50 text-sm text-gray-700"
-            >
-              Add Trip
-            </Link>
-            <Link
-              to="/edittrip/123"
-              className="block px-4 py-2 hover:bg-blue-50 text-sm text-gray-700"
-            >
-              Edit Trip
-            </Link>
-          </div>
+        {/* Profile Icon with Dropdown */}
+        <div className="relative">
+          <FaUserCircle
+            size={28}
+            className="cursor-pointer text-indigo-700 hover:text-yellow-500"
+            onClick={() => setProfileOpen(!profileOpen)}
+          />
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 bg-white text-black rounded-md shadow-lg w-40 z-50">
+              <Link
+                to="/profile"
+                className="block px-4 py-2 hover:bg-gray-100"
+                onClick={() => setProfileOpen(false)}
+              >
+                Profile
+              </Link>
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  handleLogout();
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </nav>
+    </div>
   );
-}
+};
 
 export default Navbar;
