@@ -4,9 +4,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditTrip = () => {
-  const { user } = useAuth();
+  const { auth } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams(); // Trip ID from URL
+  const { id } = useParams();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -15,36 +15,43 @@ const EditTrip = () => {
     endDate: "",
   });
 
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Fetch existing trip data
   useEffect(() => {
     const fetchTrip = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/trips`, {
+        const res = await axios.get(`http://localhost:5000/api/trips/${id}`, { // Fixed endpoint
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${auth.token}`,
           },
         });
-        const trip = res.data.find((t) => t._id === id);
+        
+        const trip = res.data;
         if (trip) {
           setFormData({
             name: trip.name,
             destination: trip.destination,
-            startDate: trip.startDate.slice(0, 10), // to format yyyy-mm-dd
-            endDate: trip.endDate.slice(0, 10),
+            startDate: trip.startDate ? trip.startDate.split('T')[0] : "", // Safer date handling
+            endDate: trip.endDate ? trip.endDate.split('T')[0] : "",
           });
-        } else {
-          setError("Trip not found.");
         }
+        setLoading(false);
       } catch (err) {
         console.error("Error fetching trip:", err);
-        setError("Failed to fetch trip.");
+        setError(err.response?.data?.message || "Failed to fetch trip");
+        setLoading(false);
       }
     };
 
-    fetchTrip();
-  }, [id, user.token]);
+    if (auth.token) { // Only fetch if token exists
+      fetchTrip();
+    } else {
+      setError("Not authenticated");
+      setLoading(false);
+    }
+  }, [id, auth.token]); // Fixed dependency array
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -60,7 +67,7 @@ const EditTrip = () => {
       setError("All fields are required.");
       return;
     }
-    if (startDate > endDate) {
+    if (new Date(startDate) > new Date(endDate)) {
       setError("Start date cannot be after end date.");
       return;
     }
@@ -68,15 +75,33 @@ const EditTrip = () => {
     try {
       await axios.put(`http://localhost:5000/api/trips/${id}`, formData, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${auth.token}`,
         },
       });
       navigate("/trips");
     } catch (err) {
       console.error("Update failed:", err);
-      setError("Failed to update trip.");
+      setError(err.response?.data?.message || "Failed to update trip");
     }
   };
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        {error}
+        <button 
+          onClick={() => navigate(-1)} 
+          className="block mt-4 text-blue-500"
+        >
+          Go back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-md mx-auto">

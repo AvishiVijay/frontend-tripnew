@@ -5,37 +5,39 @@ import { useAuth } from "../../context/AuthContext";
 
 const TripList = () => {
   const [trips, setTrips] = useState([]);
-  const { user } = useAuth();
+  const { auth } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   // Fetch trips on mount
   useEffect(() => {
-    if (!user) return navigate("/login");
-
-    const fetchTrips = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/trips", {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-        setTrips(res.data);
-      } catch (err) {
-        console.error("Error fetching trips:", err);
-      }
-    };
-
+    if (!auth.token) return navigate("/login");
     fetchTrips();
-  }, [user, navigate]);
+  }, [auth.token, navigate]);
 
-  // Delete trip
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:5000/api/trips", {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
+      setTrips(res.data);
+    } catch (err) {
+      console.error("Error fetching trips:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (tripId) => {
     if (!window.confirm("Are you sure you want to delete this trip?")) return;
 
     try {
       await axios.delete(`http://localhost:5000/api/trips/${tripId}`, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${auth.token}`,
         },
       });
       setTrips(trips.filter((trip) => trip._id !== tripId));
@@ -46,9 +48,28 @@ const TripList = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">My Trips</h2>
-      {trips.length === 0 ? (
-        <p className="text-gray-600">No trips found. Add one!</p>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">My Trips</h2>
+        <Link
+          to="/add-trip"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          + Add Trip
+        </Link>
+      </div>
+
+      {loading ? (
+        <p className="text-center">Loading trips...</p>
+      ) : trips.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600 mb-4">No trips found.</p>
+          <Link
+            to="/add-trip"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded inline-block"
+          >
+            Create Your First Trip
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {trips.map((trip) => (
@@ -61,7 +82,7 @@ const TripList = () => {
                 Destination: {trip.destination}
               </p>
               <p className="text-sm text-gray-600">
-                {trip.startDate} → {trip.endDate}
+                {new Date(trip.startDate).toLocaleDateString()} → {new Date(trip.endDate).toLocaleDateString()}
               </p>
 
               <div className="mt-4 flex gap-2">

@@ -86,7 +86,7 @@ const Login = () => {
 
     try {
       await login(form); // use context login
-      navigate("/trips"); // redirect to TripList
+      navigate("/triplist"); // ✅ correct
     } catch (err) {
       console.error("Login Error:", err);
       setError(err.response?.data?.message || "Login failed. Please try again.");

@@ -80,12 +80,13 @@ const Register = () => {
 
     try {
       await register(form); // use AuthContext register
-      navigate("/trips");
+      navigate("/triplist");
     } catch (err) {
-      console.error("Register Error:", err);
-      setError(err.response?.data?.message || "Registration failed");
-    }
-  };
+  console.error("Register Error:", err);
+  setError(err.message); // ✅ shows "User already exists" or "Registration failed"
+  } 
+
+  };  
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-cyan-500 to-indigo-500 flex items-center justify-center">

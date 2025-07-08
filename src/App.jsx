@@ -25,7 +25,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/add-trip" element={<AddTrip />} />
             <Route path="/edit-trip/:id" element={<EditTrip />} />
-            <Route path="/trips" element={<TripList />} />
+            <Route path="/triplist" element={<TripList />} />
             <Route path="/itinerary/:tripId" element={<Itinerary />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
